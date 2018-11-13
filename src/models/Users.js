@@ -8,11 +8,23 @@ const UsersSchema = new mongoose.Schema({
     salt: String,
 });
 
+/**
+ * @function setPassword()
+ * @param {String} password - the password submitted by the user
+ * Will turn the password submitted by the user into an encrypted hash. This hash is made further secure through 
+ * the use of a salt which applies a randomness to the cryptography, preventing predictable hashes and dettering 
+ * bruteforce attacks 
+ */
 UsersSchema.methods.setPassword = function (password) {
     this.salt = crypto.randomBytes(16).toString('hex');
     this.hash = crypto.pbkdf2Sync(password, this.salt, 10000, 512, 'sha512').toString('hex');
 }
 
+/**
+ * @function validatePassword()
+ * @param {String} password - the password submitted by the user
+ * applies the cryptographic algorithm, including the salt, to a user submitted password in order to validate a login
+ */
 UsersSchema.methods.validatePassword = function (password) {
     const hash = crypto.pbkdf2Sync(password, this.salt, 10000, 512, 'sha512').toString('hex');
     return this.hash === hash;

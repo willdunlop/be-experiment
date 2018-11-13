@@ -11,7 +11,6 @@ const Users = mongoose.model('Users');
  * @type: POST
  */
 router.post('/', auth.optional, (req, res, next) => {
-    console.log("dat req", req.body)
     const { user } = req.body;
 
     if (!user.email) return res.status(422).json({ errors: { message: 'Email is required' } });
@@ -21,13 +20,14 @@ router.post('/', auth.optional, (req, res, next) => {
     newUser.setPassword(user.password);
 
     return newUser.save()
-        .then(() => res.json({ user: newUser.toAuthJSON() }))
+        .then(() => res.json(newUser.toAuthJSON()))
         .catch(err => console.log('error', err))
 });
 
 /**
  * Login route
  * @type: POST
+ * expects user.email and user.password
  */
 router.post('/login', auth.optional, (req, res, next) => {
     const { user } = req.body;
@@ -42,7 +42,7 @@ router.post('/login', auth.optional, (req, res, next) => {
             const user = passportUser;
             user.token = passportUser.generateJWT();
 
-            return res.json({ user: user.toAuthJSON() });
+            return res.json(user.toAuthJSON());
         }
 
         return status(400).info;
@@ -61,7 +61,7 @@ router.get('/current', auth.required, (req, res, next) => {
     return Users.findById(id)
         .then(user => {
             if(!user) return res.sendStatus(400);
-            return res.json({ user: user.toAuthJSON() });
+            return res.json(user.toAuthJSON());
         });
 });
 
